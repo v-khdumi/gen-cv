@@ -3,8 +3,7 @@
 # Manually managing azure-functions-worker may cause unexpected issues
 
 azure-functions
-azurefunctions-extensions-http-fastapi
-openai
-pyodbc
 requests
-beautifulsoup4
+pyodbc
+azure-communication-networktraversal
+azure-communication-identity
