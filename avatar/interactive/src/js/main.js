@@ -52,68 +52,7 @@ function setupWebRTC() {
         }]
       })
 
-      // Fetch WebRTC video stream and mount it to an HTML video element
-      peerConnection.ontrack = function (event) {
-        console.log('peerconnection.ontrack', event)
-        // Clean up existing video element if there is any
-        remoteVideoDiv = document.getElementById('remoteVideo')
-        for (var i = 0; i < remoteVideoDiv.childNodes.length; i++) {
-          if (remoteVideoDiv.childNodes[i].localName === event.track.kind) {
-            remoteVideoDiv.removeChild(remoteVideoDiv.childNodes[i])
-          }
-        }
-
-        const videoElement = document.createElement(event.track.kind)
-        videoElement.id = event.track.kind
-        videoElement.srcObject = event.streams[0]
-        videoElement.autoplay = true
-        videoElement.controls = false
-        document.getElementById('remoteVideo').appendChild(videoElement)
-
-        canvas = document.getElementById('canvas')
-        remoteVideoDiv.hidden = true
-        canvas.hidden = false
-
-        videoElement.addEventListener('play', () => {
-          remoteVideoDiv.style.width = videoElement.videoWidth / 2 + 'px'
-          window.requestAnimationFrame(makeBackgroundTransparent)
-        })
-      }
-
-      // Make necessary update to the web page when the connection state changes
-      peerConnection.oniceconnectionstatechange = e => {
-        console.log("WebRTC status: " + peerConnection.iceConnectionState)
-
-        if (peerConnection.iceConnectionState === 'connected') {
-          document.getElementById('loginOverlay').classList.add("hidden");
-        }
-
-        if (peerConnection.iceConnectionState === 'disconnected') {
-        }
-      }
-
-      // Offer to receive 1 audio, and 1 video track
-      peerConnection.addTransceiver('video', { direction: 'sendrecv' })
-      peerConnection.addTransceiver('audio', { direction: 'sendrecv' })
-
-      // start avatar, establish WebRTC connection
-      avatarSynthesizer.startAvatarAsync(peerConnection).then((r) => {
-        if (r.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
-          console.log("[" + (new Date()).toISOString() + "] Avatar started. Result ID: " + r.resultId)
-          greeting()
-        } else {
-          console.log("[" + (new Date()).toISOString() + "] Unable to start avatar. Result ID: " + r.resultId)
-          if (r.reason === SpeechSDK.ResultReason.Canceled) {
-            let cancellationDetails = SpeechSDK.CancellationDetails.fromResult(r)
-            if (cancellationDetails.reason === SpeechSDK.CancellationReason.Error) {
-              console.log(cancellationDetails.errorDetails)
-            };
-
-            console.log("Unable to start avatar: " + cancellationDetails.errorDetails);
-          }
-        }
-      }).catch(
-        (error) => {
+      // Fetch WebRTC video => {
           console.log("[" + (new Date()).toISOString() + "] Avatar failed to start. Error: " + error)
           document.getElementById('startSession').disabled = false
           document.getElementById('configuration').hidden = false
@@ -374,6 +313,17 @@ window.startSession = () => {
     })
 }
 
+// Add detailed logging for websocket connection
+function startAvatar() {
+  try {
+    // Assuming you have a function to initialize the websocket connection
+    initializeWebSocketConnection();
+    console.log("[INFO] WebSocket connection initialized successfully.");
+  } catch (error) {
+    console.error("[ERROR] Failed to initialize WebSocket connection:", error);
+  }
+}
+
 async function greeting() {
   text = `Hi, my name is ${TalkingAvatarCharacter}. How can I help you?`;
   addToConversationHistory(text, "light")
@@ -385,12 +335,12 @@ async function greeting() {
     if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
       console.log("Speech synthesized to speaker for text [ " + spokenText + " ]. Result ID: " + result.resultId)
     } else {
-      console.log("Unable to speak text. Result ID: " + result.resultId)
+      console.error("Unable to speak text. Result ID: " + result.resultId);
       if (result.reason === SpeechSDK.ResultReason.Canceled) {
-        let cancellationDetails = SpeechSDK.CancellationDetails.fromResult(result)
-        console.log(cancellationDetails.reason)
+        let cancellationDetails = SpeechSDK.CancellationDetails.fromResult(result);
+        console.error("Cancellation reason:", cancellationDetails.reason);
         if (cancellationDetails.reason === SpeechSDK.CancellationReason.Error) {
-          console.log(cancellationDetails.errorDetails)
+          console.error("Error details:", cancellationDetails.errorDetails);
         }
       }
     }
@@ -398,13 +348,24 @@ async function greeting() {
 }
 
 window.stopSession = () => {
-  speechSynthesizer.close()
+  try {
+    speechSynthesizer.close();
+    console.log("[INFO] Speech synthesizer closed successfully.");
+  } catch (error) {
+    console.error("[ERROR] Failed to close speech synthesizer:", error);
+  }
 }
 
+// Add error handling for startRecording
 window.startRecording = () => {
-  const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, 'eastus');
-  speechConfig.authorizationToken = token;
-  speechConfig.SpeechServiceConnection_LanguageIdMode = "Continuous";
+  try {
+    const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, 'eastus');
+    speechConfig.authorizationToken = token;
+    speechConfig.SpeechServiceConnection_LanguageIdMode = "Continuous";
+    console.log("[INFO] Recording started with speech configuration:", speechConfig);
+  } catch (error) {
+    console.error("[ERROR] Failed to start recording:", error);
+  }
   var autoDetectSourceLanguageConfig = SpeechSDK.AutoDetectSourceLanguageConfig.fromLanguages(supported_languages);
 
   document.getElementById('buttonIcon').className = "fas fa-stop"
