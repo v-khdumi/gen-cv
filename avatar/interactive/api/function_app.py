@@ -527,22 +527,30 @@ def get_ice_server_token(req: Request) -> JSONResponse:
     
 
 @app.route(route="get-speech-token", methods=[func.HttpMethod.GET, func.HttpMethod.POST])
-def get_speech_token(req: Request) -> JSONResponse:
+def get_speech_token(req: HttpRequest) -> HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
+
+    region = "swedencentral"  # Asigură-te că setezi această valoare
+    subscription_key = "2eFFMqpD7z6FLfbkmXQuNw6BXCEUkUFl5i4Ha4yI8ehpLdLJQmg8JQQJ99ALACfhMk5XJ3w3AAAYACOG5ZYM"  # Asigură-te că setezi această valoare
 
     # Define token endpoint
     token_endpoint = f"https://{region}.api.cognitive.microsoft.com/sts/v1.0/issueToken"
 
-    # Make HTTP request with subscription key as header
-    response = requests.post(token_endpoint, headers={"Ocp-Apim-Subscription-Key": subscription_key})
+    try:
+        # Make HTTP request with subscription key as header
+        response = requests.post(token_endpoint, headers={"Ocp-Apim-Subscription-Key": subscription_key})
+        response.raise_for_status()  # Asigură-te că detectezi erorile HTTP
 
-    print(response)
-
-    if response.status_code == 200:
-        return JSONResponse(
-            content = {"token": response.text},
+        # Return token if request is successful
+        return HttpResponse(
+            body=json.dumps({"token": response.text}),
             status_code=200,
             headers={"Content-Type": "application/json"}
         )
-    else:
-        return func.HttpResponse(response.status_code)
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error fetching token: {e}")
+        return HttpResponse(
+            body=f"Error fetching token: {e}",
+            status_code=500,
+            headers={"Content-Type": "application/json"}
+        )
