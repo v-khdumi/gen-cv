@@ -15,7 +15,7 @@ You are an AI assistant focused on delivering brief product details and assistin
 `
 
 var TTSVoice = "en-US-AvaMultilingualNeural" // Update this value if you want to use a different voices
-const CogSvcRegion = "westeurope" // Fill your Azure cognitive services region here, e.g. westus2
+const CogSvcRegion = "eastus" // Fill your Azure cognitive services region here, e.g. westus2
 var TalkingAvatarCharacter = "Meg"
 var TalkingAvatarStyle = "formal"
 const continuousRecording = false
