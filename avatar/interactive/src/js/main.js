@@ -356,6 +356,15 @@ window.stopSession = () => {
   }
 }
 
+// ...existing code...
+      // Fetch WebRTC video => {
+          console.log("[" + (new Date()).toISOString() + "] Avatar failed to start. Error: " + error)
+          document.getElementById('startSession').disabled = false
+          document.getElementById('configuration').hidden = false
+        }
+      )
+// ...existing code...
+
 // Add error handling for startRecording
 window.startRecording = () => {
   try {
